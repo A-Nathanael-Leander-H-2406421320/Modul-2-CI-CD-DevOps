@@ -12,17 +12,23 @@
     <h2>Product List</h2>
     <a class="btn btn-primary btn-sm mb-3" th:href="@{/product/create}">Create Product</a>
 
-    <table border="1" class="table table-striped table-responsive-md">
+    <table class="table table-hover table-responsive-md">
         <thead>
         <tr>
             <th scope="col">Product Name</th>
             <th scope="col">Quantity</th>
+            <th scope="col">Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="product: ${products}">
             <td th:text="${product.productName}"></td>
             <td th:text="${product.productQuantity}"></td>
+            <td>
+                <a class="btn btn-sm btn-outline-success"
+                   th:href="@{|/product/edit/${product.productId}|}"
+                   th:attr="data-product-id=${product.productId}">Edit</a>
+            </td>
         </tr>
         </tbody>
     </table>
