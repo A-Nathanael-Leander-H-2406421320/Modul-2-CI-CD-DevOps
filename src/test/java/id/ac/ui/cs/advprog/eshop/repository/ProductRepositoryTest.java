@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,7 +45,7 @@ class ProductRepositoryTest {
     }
 
     @Test
-    void testFindALLIfMoreThanUneProduct() {
+    void testFindAllIfMoreThanOneProduct() {
         Product product1 = new Product();
         product1.setProductId("eb558e9f-1c39-460g-8868-71af6af63bd6");
         product1.setProductName("Sampo Cap Bambang");
@@ -64,5 +65,44 @@ class ProductRepositoryTest {
         savedProduct = productIterator.next();
         assertEquals(product2.getProductId(), savedProduct.getProductId());
         assertFalse(productIterator.hasNext());
+    }
+
+    @Test
+    void testFindProductByIdSuccess() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Product foundProduct = productRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        assertNotNull(foundProduct);
+        assertEquals(product.getProductId(), foundProduct.getProductId());
+        assertEquals(product.getProductName(), foundProduct.getProductName());
+        assertEquals(product.getProductQuantity(), foundProduct.getProductQuantity());
+    }
+
+    @Test
+    void testFindProductByIdFail() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        });
+        assertEquals(NoSuchElementException.class, exception.getClass());
+        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+    }
+
+    @Test
+    void testFindProductByIdEmptyRepo() {
+        Exception exception = assertThrows(Exception.class, () -> {
+            productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        });
+        assertEquals(NoSuchElementException.class, exception.getClass());
+        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
     }
 }
