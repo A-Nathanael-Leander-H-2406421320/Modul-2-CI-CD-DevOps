@@ -105,4 +105,43 @@ class ProductRepositoryTest {
         assertEquals(NoSuchElementException.class, exception.getClass());
         assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
     }
+
+    @Test
+    void testEditProductSuccess() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        updatedProduct.setProductName("Sampo Cap Budi");
+        updatedProduct.setProductQuantity(150);
+
+        Product editedProduct = productRepository.edit(updatedProduct);
+        assertEquals(updatedProduct.getProductId(), editedProduct.getProductId());
+        assertEquals(updatedProduct.getProductName(), editedProduct.getProductName());
+        assertEquals(updatedProduct.getProductQuantity(), editedProduct.getProductQuantity());
+    }
+
+    @Test
+    void testEditProductFail() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setProductId("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        updatedProduct.setProductName("Sampo Cap Budi");
+        updatedProduct.setProductQuantity(150);
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            productRepository.edit(updatedProduct);
+        });
+        assertEquals(NoSuchElementException.class, exception.getClass());
+        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+    }
 }
