@@ -144,4 +144,41 @@ class ProductRepositoryTest {
         assertEquals(NoSuchElementException.class, exception.getClass());
         assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
     }
+
+    @Test
+    void testDeleteProductSuccess() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Product deletedProduct = productRepository.delete(product);
+        assertEquals(product.getProductId(), deletedProduct.getProductId());
+        assertEquals(product.getProductName(), deletedProduct.getProductName());
+        assertEquals(product.getProductQuantity(), deletedProduct.getProductQuantity());
+
+        Iterator<Product> productIterator = productRepository.findAll();
+        assertFalse(productIterator.hasNext());
+    }
+
+    @Test
+    void testDeleteProductFail() {
+        Product product = new Product();
+        product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        product.setProductName("Sampo Cap Bambang");
+        product.setProductQuantity(100);
+        productRepository.create(product);
+
+        Product productToDelete = new Product();
+        productToDelete.setProductId("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        productToDelete.setProductName("Sampo Cap Usep");
+        productToDelete.setProductQuantity(50);
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            productRepository.delete(productToDelete);
+        });
+        assertEquals(NoSuchElementException.class, exception.getClass());
+        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+    }
 }
