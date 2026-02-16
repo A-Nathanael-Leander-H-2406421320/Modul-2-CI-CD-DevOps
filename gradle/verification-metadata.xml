@@ -8,6 +8,7 @@
         <trusted-artifacts>
             <trust group="gradle" name="gradle" version="8.14.4"/>
             <trust group="org.jetbrains.kotlin"/>
+            <trust group="org.junit"/>
             <trust file=".*-sources[.]jar" regex="true"/>
             <trust file=".*-javadoc[.]jar" regex="true"/>
         </trusted-artifacts>
