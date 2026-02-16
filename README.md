@@ -1,48 +1,36 @@
-# Module 1 - Coding Standards
+# Module 2 - CI/CD & DevOps
 
-## Reflection 1
+## PaaS Deployment Link:
 
-I already implemented these coding standards in this projects:
+### [https://sparkling-georgiana-nathanaeru-46ed09d6.koyeb.app/](https://sparkling-georgiana-nathanaeru-46ed09d6.koyeb.app/)
 
-- Clean code principles: clear variable and function names, simple and concise functions, non-redundant use of comments,
-  consistent formatting powered by IntelliJ IDEA's auto-formatting features, modular code structure, null safety in
-  error handling, and use of getters and setters for encapsulation.
-- Secure coding practices: input validation for numeral inputs, use of getter-setters instead of direct field access,
-  and use of random UUID instead of sequential numeric IDs for product IDs.
+## Reflection
 
-One of the challenges I faced while writing this program is to ensure that the name of HTML templates are the same as
-return values of controller methods. This is discovered when I encountered an error while adhering to the module
-documentation. To overcome this challenge, I carefully reviewed the code and cross-checked the template names with the
-return values of the controller methods to ensure they matched correctly.
+#### 1) Code quality issue and its fix
 
-## Reflection 2
+Analysis with SonarCloud returns this issue: "Dependencies are not verified because the `verification-metadata.xml` file
+is missing. Make sure it is safe here." This is important for security and reliability of the application, as unverified
+dependencies can introduce vulnerabilities or instability. To fix this issue, I did this fix in the local repository:
 
-#### 1) Writing unit tests
+```bash
+./gradlew --write-verification-metadata sha256 build   
+```
 
-Writing unit tests felt exhausting but also productive and clarifying, because I can ensure the program's behavior is
-correct and edge cases are handled. Seeing tests pass and catching bugs early provided satisfaction and confidence in
-the code's quality.
+This generates `gradle/verification-metadata.xml` file with the necessary checksums for all dependencies, ensuring that
+they are verified during the build process. After generating this file and doing some fixes to mitigate syncing fails
+within Gradle, I committed it to the repository and pushed the changes to GitHub. This should resolve the issue in
+SonarCloud and improve the security and reliability of the application.
 
-There's no fixed number of tests we should write per class. The goal is to cover behavior, not implementation. We can
-make sure our tests are enough by focusing on testing observable behavior (public methods and outputs), not private
-implementation details. Consider all possible inputs, edge cases, and error conditions. This relates to the next
-paragraph about code coverage.
+#### 2) Have the current implementation met the definition of CI/CD?
 
-Code coverage is a helpful metric that shows which lines/branches were executed during tests. It helps find untested
-areas, but it is only a guide. 100% code coverage does not guarantee bug-free code. Coverage only indicates that code
-was executed by tests, it does not assert that the behavior is correct for all cases. Tests can execute lines without
-asserting the right outcomes.
+Yes, I believe the current implementation meets the definitions of Continuous Integration and Continuous Deployment (
+CI/CD).
 
-#### 2) About duplicated functional test class scenario
+CI is successfully achieved through the `ci.yml` and `sonar.yml` workflows in GitHub Actions, which automatically
+execute the test suite and perform static code analysis on every push and pull request to verify code integrity before
+merging.
 
-Duplicating setup and instance variables across functional test classes can be considered as a violation of DRY (Don't
-Repeat Yourself) principle and clean code principle in general. It increases maintenance overhead and makes tests
-noisier and more brittle. This is because a change to shared wiring or fixtures must be repeated in multiple places, and
-repeated boilerplate hides the intent of individual tests.
-
-We can extract shared fixtures and helpers to keep tests clean and focused, by using a small base test (or a
-package-level test fixtures), test factories or helper methods to build sample data, and page-object-like helpers for
-functional flows. It is recommended to use composition or reusable helpers over copy-paste, and leverage
-appropriate test framework (e.g., Spring test annotations) so tests remain readable, maintainable, and resilient to
-implementation changes.
-
+CD is established by integrating the repository with Koyeb PaaS, where any changes pushed/pulled to the main branch
+trigger an automatic build using the `Dockerfile` and deploy the updated application to production server without manual
+intervention. This complete automation ensures that valid code is consistently merged and immediately released to users,
+effectively fulfilling the core principles of CI/CD.
