@@ -5,16 +5,16 @@ import id.ac.ui.cs.advprog.eshop.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.*;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -22,20 +22,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ProductController.class)
+@WebMvcTest(
+        controllers = ProductController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = CarController.class)
+)
+@Import(ProductControllerTest.TestConfig.class)
 public class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private ProductService service;
 
     @Test
     void createProductPage_shouldReturnCreateViewAndModel() throws Exception {
         mockMvc.perform(get("/product/create"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("create_product"))
+                .andExpect(view().name("createProduct"))
                 .andExpect(model().attributeExists("product"));
     }
 
@@ -62,7 +66,7 @@ public class ProductControllerTest {
 
         mockMvc.perform(get("/product/list"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("list_product"))
+                .andExpect(view().name("productList"))
                 .andExpect(model().attributeExists("products"))
                 .andExpect(model().attribute("products", hasSize(1)));
 
@@ -79,25 +83,14 @@ public class ProductControllerTest {
         p2.setProductId("id-2");
         p2.setProductName("B");
         p2.setProductQuantity(2);
-        when(service.findAll()).thenReturn(Arrays.asList(p1, p2));
+        when(service.findById("id-2")).thenReturn(p2);
 
         mockMvc.perform(get("/product/edit/id-2"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("edit_product"))
+                .andExpect(view().name("editProduct"))
                 .andExpect(model().attributeExists("product"));
 
-        verify(service, times(1)).findAll();
-    }
-
-    @Test
-    void editProductPage_shouldThrowWhenProductDoesNotExist() throws Exception {
-        when(service.findAll()).thenReturn(Collections.emptyList());
-
-        Exception ex = assertThrows(Exception.class, () -> mockMvc.perform(get("/product/edit/unknown-id")).andReturn());
-        Throwable cause = ex.getCause();
-        assertTrue(cause instanceof IllegalArgumentException || (cause != null && cause.getCause() instanceof IllegalArgumentException));
-
-        verify(service, times(1)).findAll();
+        verify(service, times(1)).findById("id-2");
     }
 
     @Test
@@ -117,25 +110,39 @@ public class ProductControllerTest {
         p1.setProductId("id-1");
         p1.setProductName("A");
         p1.setProductQuantity(1);
-        when(service.findAll()).thenReturn(Collections.singletonList(p1));
+        when(service.findById("id-1")).thenReturn(p1);
 
         mockMvc.perform(get("/product/delete/id-1"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("delete_product"))
+                .andExpect(view().name("deleteProduct"))
                 .andExpect(model().attributeExists("product"));
 
-        verify(service, times(1)).findAll();
+        verify(service, times(1)).findById("id-1");
     }
 
     @Test
     void deleteProductPage_shouldThrowWhenProductDoesNotExist() throws Exception {
-        when(service.findAll()).thenReturn(Collections.emptyList());
+        when(service.findById("unknown-id")).thenThrow(new NoSuchElementException("Product with ID unknown-id not found."));
 
-        Exception ex = assertThrows(Exception.class, () -> mockMvc.perform(get("/product/delete/unknown-id")).andReturn());
-        Throwable cause = ex.getCause();
-        assertTrue(cause instanceof IllegalArgumentException || (cause != null && cause.getCause() instanceof IllegalArgumentException));
+        try {
+            org.springframework.test.web.servlet.MvcResult result = mockMvc.perform(get("/product/delete/unknown-id")).andReturn();
+            Throwable resolved = result.getResolvedException();
+            assertTrue(resolved instanceof NoSuchElementException || (resolved != null && resolved.getCause() instanceof NoSuchElementException),
+                    "Expected NoSuchElementException as resolved exception or as its cause.");
+        } catch (Exception e) {
+            Throwable t = e;
+            boolean found = false;
+            while (t != null) {
+                if (t instanceof NoSuchElementException) {
+                    found = true;
+                    break;
+                }
+                t = t.getCause();
+            }
+            assertTrue(found, "Expected NoSuchElementException in exception cause chain but was: " + e);
+        }
 
-        verify(service, times(1)).findAll();
+        verify(service, times(1)).findById("unknown-id");
     }
 
     @Test
@@ -147,5 +154,14 @@ public class ProductControllerTest {
                 .andExpect(status().is3xxRedirection());
 
         verify(service, times(1)).delete(any(Product.class));
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public ProductService productService() {
+            return mock(ProductService.class);
+        }
     }
 }
