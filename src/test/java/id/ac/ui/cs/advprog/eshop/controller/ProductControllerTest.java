@@ -101,7 +101,7 @@ public class ProductControllerTest {
                         .param("productQuantity", "10"))
                 .andExpect(status().is3xxRedirection());
 
-        verify(service, times(1)).edit(any(Product.class));
+        verify(service, times(1)).update(eq("id-1"), any(Product.class));
     }
 
     @Test
@@ -153,7 +153,8 @@ public class ProductControllerTest {
                         .param("productQuantity", "1"))
                 .andExpect(status().is3xxRedirection());
 
-        verify(service, times(1)).delete(any(Product.class));
+        // ProductController now calls service.delete(productId)
+        verify(service, times(1)).delete(eq("id-1"));
     }
 
     @TestConfiguration

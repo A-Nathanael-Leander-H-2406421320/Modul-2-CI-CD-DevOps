@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/product")
@@ -17,51 +16,43 @@ public class ProductController {
     @Autowired
     private ProductService service;
 
-    @GetMapping("/create")
+    @GetMapping("/createProduct")
     public String createProductPage(Model model) {
         Product product = new Product();
-        String uniqueId = UUID.randomUUID().toString();
-        product.setProductId(uniqueId);
         model.addAttribute("product", product);
         return "createProduct";
     }
 
-    @PostMapping("/create")
+    @PostMapping("/createProduct")
     public String createProductPost(@ModelAttribute Product product, Model model) {
         service.create(product);
-        return "redirect:list";
+        return "redirect:listProduct";
     }
 
-    @GetMapping("/list")
+    @GetMapping("/listProduct")
     public String listProductPage(Model model) {
         List<Product> allProducts = service.findAll();
         model.addAttribute("products", allProducts);
         return "productList";
     }
 
-    @GetMapping("/edit/{productId}")
+    @GetMapping("/editProduct/{productId}")
     public String editProductPage(@PathVariable("productId") String productId, Model model) {
         Product product = service.findById(productId);
         model.addAttribute("product", product);
         return "editProduct";
     }
 
-    @PostMapping("/edit")
+    @PostMapping("/editProduct")
     public String editProductPost(@ModelAttribute Product product, Model model) {
-        service.edit(product);
-        return "redirect:list";
+        System.out.println(product.getProductId());
+        service.update(product.getProductId(), product);
+        return "redirect:listProduct";
     }
 
-    @GetMapping("/delete/{productId}")
-    public String deleteProduct(@PathVariable("productId") String productId, Model model) {
-        Product product = service.findById(productId);
-        model.addAttribute("product", product);
-        return "deleteProduct";
-    }
-
-    @PostMapping("/delete")
-    public String deleteProductPost(@ModelAttribute Product product, Model model) {
-        service.delete(product);
-        return "redirect:list";
+    @PostMapping("/deleteProduct")
+    public String deleteProduct(@RequestParam("productId") String productId) {
+        service.delete(productId);
+        return "redirect:listProduct";
     }
 }

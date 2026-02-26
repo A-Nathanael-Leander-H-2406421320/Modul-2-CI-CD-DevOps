@@ -6,13 +6,17 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Repository
 public class ProductRepository {
     private List<Product> productData = new ArrayList<>();
 
     public Product create(Product product) {
+        if (product.getProductId() == null) {
+            UUID uuid = UUID.randomUUID();
+            product.setProductId(uuid.toString());
+        }
         productData.add(product);
         return product;
     }
@@ -27,20 +31,21 @@ public class ProductRepository {
                 return product;
             }
         }
-        throw new NoSuchElementException("Product with ID " + id + " not found.");
+        return null;
     }
 
-    public Product edit(Product updatedProduct) {
-        String id = updatedProduct.getProductId();
-        Product oldProduct = findById(id);
-        oldProduct.setProductName(updatedProduct.getProductName());
-        oldProduct.setProductQuantity(updatedProduct.getProductQuantity());
-        return oldProduct;
+    public Product update(String id, Product updatedProduct) {
+        for (Product product : productData) {
+            if (product.getProductId().equals(id)) {
+                product.setProductName(updatedProduct.getProductName());
+                product.setProductQuantity(updatedProduct.getProductQuantity());
+                return product;
+            }
+        }
+        return null;
     }
 
-    public Product delete(Product product) {
-        Product productToDelete = findById(product.getProductId());
-        productData.remove(productToDelete);
-        return productToDelete;
+    public void delete(String id) {
+        productData.removeIf(product -> product.getProductId().equals(id));
     }
 }
