@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -90,20 +89,14 @@ class ProductRepositoryTest {
         product.setProductQuantity(100);
         productRepository.create(product);
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
-        });
-        assertEquals(NoSuchElementException.class, exception.getClass());
-        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+        Product found = productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        assertNull(found);
     }
 
     @Test
     void testFindProductByIdEmptyRepo() {
-        Exception exception = assertThrows(Exception.class, () -> {
-            productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
-        });
-        assertEquals(NoSuchElementException.class, exception.getClass());
-        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+        Product found = productRepository.findById("a0f9de46-90b1-437d-a0bf-d0821dde9096");
+        assertNull(found);
     }
 
     @Test
@@ -119,7 +112,8 @@ class ProductRepositoryTest {
         updatedProduct.setProductName("Sampo Cap Budi");
         updatedProduct.setProductQuantity(150);
 
-        Product editedProduct = productRepository.edit(updatedProduct);
+        Product editedProduct = productRepository.update(updatedProduct.getProductId(), updatedProduct);
+        assertNotNull(editedProduct);
         assertEquals(updatedProduct.getProductId(), editedProduct.getProductId());
         assertEquals(updatedProduct.getProductName(), editedProduct.getProductName());
         assertEquals(updatedProduct.getProductQuantity(), editedProduct.getProductQuantity());
@@ -138,11 +132,8 @@ class ProductRepositoryTest {
         updatedProduct.setProductName("Sampo Cap Budi");
         updatedProduct.setProductQuantity(150);
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            productRepository.edit(updatedProduct);
-        });
-        assertEquals(NoSuchElementException.class, exception.getClass());
-        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+        Product edited = productRepository.update(updatedProduct.getProductId(), updatedProduct);
+        assertNull(edited);
     }
 
     @Test
@@ -153,10 +144,7 @@ class ProductRepositoryTest {
         product.setProductQuantity(100);
         productRepository.create(product);
 
-        Product deletedProduct = productRepository.delete(product);
-        assertEquals(product.getProductId(), deletedProduct.getProductId());
-        assertEquals(product.getProductName(), deletedProduct.getProductName());
-        assertEquals(product.getProductQuantity(), deletedProduct.getProductQuantity());
+        productRepository.delete(product.getProductId());
 
         Iterator<Product> productIterator = productRepository.findAll();
         assertFalse(productIterator.hasNext());
@@ -170,15 +158,11 @@ class ProductRepositoryTest {
         product.setProductQuantity(100);
         productRepository.create(product);
 
-        Product productToDelete = new Product();
-        productToDelete.setProductId("a0f9de46-90b1-437d-a0bf-d0821dde9096");
-        productToDelete.setProductName("Sampo Cap Usep");
-        productToDelete.setProductQuantity(50);
+        productRepository.delete("a0f9de46-90b1-437d-a0bf-d0821dde9096");
 
-        Exception exception = assertThrows(Exception.class, () -> {
-            productRepository.delete(productToDelete);
-        });
-        assertEquals(NoSuchElementException.class, exception.getClass());
-        assertEquals("Product with ID a0f9de46-90b1-437d-a0bf-d0821dde9096 not found.", exception.getMessage());
+        Iterator<Product> productIterator = productRepository.findAll();
+        assertTrue(productIterator.hasNext());
+        Product saved = productIterator.next();
+        assertEquals(product.getProductId(), saved.getProductId());
     }
 }

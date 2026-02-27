@@ -76,38 +76,36 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    void edit_shouldCallRepositoryAndReturnUpdatedProduct() {
+    void update_shouldCallRepository() {
         Product updated = new Product();
         updated.setProductId("id-1");
         updated.setProductName("Updated");
         updated.setProductQuantity(10);
 
-        when(productRepository.edit(updated)).thenReturn(updated);
+        // repository.update returns Product or null; service.update is void and delegates
+        when(productRepository.update(eq("id-1"), any(Product.class))).thenReturn(updated);
 
-        Product result = service.edit(updated);
+        service.update("id-1", updated);
 
-        assertSame(updated, result);
-        verify(productRepository, times(1)).edit(updated);
+        verify(productRepository, times(1)).update(eq("id-1"), any(Product.class));
     }
 
     @Test
-    void delete_shouldCallRepositoryAndReturnDeletedProduct() {
-        when(productRepository.delete(p1)).thenReturn(p1);
+    void delete_shouldCallRepository() {
+        doNothing().when(productRepository).delete("id-1");
 
-        Product result = service.delete(p1);
+        service.delete("id-1");
 
-        assertSame(p1, result);
-        verify(productRepository, times(1)).delete(p1);
+        verify(productRepository, times(1)).delete("id-1");
     }
 
     @Test
-    void edit_shouldPropagateRepositoryException() {
+    void update_shouldPropagateRepositoryException() {
         Product updated = new Product();
         updated.setProductId("unknown");
-        when(productRepository.edit(updated)).thenThrow(new RuntimeException("not found"));
+        when(productRepository.update(eq("unknown"), any(Product.class))).thenThrow(new RuntimeException("not found"));
 
-        assertThrows(RuntimeException.class, () -> service.edit(updated));
-        verify(productRepository, times(1)).edit(updated);
+        assertThrows(RuntimeException.class, () -> service.update("unknown", updated));
+        verify(productRepository, times(1)).update(eq("unknown"), any(Product.class));
     }
 }
-
