@@ -43,7 +43,7 @@ effectively fulfilling the core principles of CI/CD.
 
 <details>
 <summary>
-<h1>Module 3 - CI/CD & DevOps</h1>
+<h1>Module 3 - OO Principles & Software Maintainability</h1>
 </summary>
 
 ## Reflection
